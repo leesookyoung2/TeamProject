@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+	
+	<!-- DB 연동하는 properties 파일의 위치를 알려준다 -->
+	<context:property-placeholder location="classpath:oracleDB.properties"/>
+	<!-- HikariCP bean 등록 -->
+	<bean id="hikariConfig" class="com.zaxxer.hikari.HikariConfig">
+		<property name="driverClassName" value="${ora.driver}"/>
+		<property name="jdbcUrl" 		 value="${ora.url}"/>
+		<property name="username"		 value="${ora.username}"/>
+		<property name="password"		 value="${ora.password}"/>
+	</bean>
+	
+	<!-- HikariCP configuration -->
+ 	<bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+		<constructor-arg ref="hikariConfig" />
+		<property name="idleTimeout" value="300"/>
+		<property name="maxLifetime" value="300"/>	
+	</bean> 
+	<!-- 스프링과 mybatis 연동 -->
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="configLocation" value="classpath:sql-map-config.xml"/>
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<bean id="sessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg name="sqlSessionFactory" ref="sqlSession"/>
+	</bean>
+	
+	<context:component-scan base-package="com.ezen.biz"></context:component-scan>		
+</beans>
